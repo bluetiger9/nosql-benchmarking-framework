@@ -1,20 +1,11 @@
 package com.github.bluetiger9.nosql.benchmarking.clients;
 
-public abstract class AbstractDatabaseClient implements DatabaseClient {
-	private final String name;
-	private final String description;
+import java.util.Properties;
 
-	public AbstractDatabaseClient(String name, String description) {
-		this.name = name;
-		this.description = description;
-	}
-	
-	public String getName() {
-		return name;
-	}
-	
-	public String getDescription() {
-		return description;
-	};
+import com.github.bluetiger9.nosql.benchmarking.Component;
 
+public abstract class AbstractDatabaseClient extends Component implements DatabaseClient {
+	public AbstractDatabaseClient(Properties properties) {
+		super(properties);
+	}
 }

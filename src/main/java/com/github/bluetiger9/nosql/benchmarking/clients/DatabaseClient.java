@@ -6,7 +6,7 @@ public interface DatabaseClient {
 	
 	String getDescription();
 	
-	void connect();
+	void connect() throws ClientException;
 	
-	void disconnect();
+	void disconnect() throws ClientException;
 }
