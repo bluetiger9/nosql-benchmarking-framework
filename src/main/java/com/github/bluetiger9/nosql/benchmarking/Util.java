@@ -14,7 +14,7 @@ public class Util {
     
     public static String getMandatoryProperty(Properties properties, String property) {
         return getMandatoryProperty(properties, property, 
-                String.format("The mandatory property %s is not present."));
+                String.format("The mandatory property %s is not present.", property));
     }
     
     public static String getMandatoryProperty(Properties properties, String property, String message) {

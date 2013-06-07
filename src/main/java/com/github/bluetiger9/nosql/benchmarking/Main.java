@@ -11,10 +11,10 @@ import com.github.bluetiger9.nosql.benchmarking.runners.Runner;
 public final class Main {
     private static final String PROPERTY_RUNNER = "runner";
     
-    private static final String DEFAULT_RUNNER = "com.githb.bluetiger9.nosql.benchmarking.runners.BasicRunner";
+    private static final String DEFAULT_RUNNER = "com.github.bluetiger9.nosql.benchmarking.runners.Runner";
     
     private static final Logger LOGGER = Logger.getLogger(Main.class);
-    
+        
     /**
      * The main method.
      * @param args
@@ -29,7 +29,8 @@ public final class Main {
         
         final Properties mainProperties = loadMainProperties(args[0]);
         
-        createRunner(mainProperties);
+        final Runner runner = createRunner(mainProperties);
+        runner.runBenchmark();
     }
 
     /**

@@ -11,7 +11,7 @@ public abstract class ComponentFactory {
     private ComponentFactory() {
     }
 
-    public static <E extends Component> E constructFromProperties(Class<E> clazz, Properties properties) {
+    public static <E> E constructFromProperties(Class<E> clazz, Properties properties) {
         try {
             return clazz.getConstructor(Properties.class).newInstance(properties);
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
@@ -22,7 +22,7 @@ public abstract class ComponentFactory {
     }
 
     @SuppressWarnings("unchecked")
-    public static <E extends Component, S> S constructFromProperties(Class<S> superClass,
+    public static <E, S> S constructFromProperties(Class<S> superClass,
             Class<E> clazz, Properties properties) {
         if (!superClass.isAssignableFrom(clazz)) {
             throw new IllegalArgumentException(String.format("Class %s is not a subtype of %s", clazz.getName(),
