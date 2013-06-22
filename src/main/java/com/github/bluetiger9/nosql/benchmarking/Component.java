@@ -24,6 +24,9 @@ public abstract class Component {
 		this.name = properties.getProperty(PROPERTY_NAME, getClass().getSimpleName());
 		this.description = properties.getProperty(PROPERTY_DESCRIPTION, DEFAULT_DESCRIPTION);
 		this.logger = Logger.getLogger(name);
+		if (!properties.isEmpty()) {
+		    logger.info("created with properties: " + properties);
+		}
 	}
 	
 	public String getName() {

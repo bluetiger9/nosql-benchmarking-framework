@@ -33,6 +33,8 @@ public class Runner extends Component {
 
         this.clientClass = loadClientClass();
         this.clientProperties = loadClientProperties();
+        
+        addRuntimeProperties(benchmarkProperties);
 
         this.clientFactory = new SimpleClientFactory(clientClass, clientProperties);
         this.benchmark = ComponentFactory.constructFromProperties(Benchmark.class, benchmarkClass, benchmarkProperties);
@@ -86,5 +88,15 @@ public class Runner extends Component {
             logger.error("Failed to load the benchmark properties", e);
             throw new RuntimeException(e);
         }
+    }
+    
+    private void addRuntimeProperties(Properties benchmarkProperties) {
+        properties.remove(PROPERTY_BENCHMARK_CLASS);
+        properties.remove(PROPERTY_BENCHMARK_PROPERTIES);
+        properties.remove(PROPERTY_CLIENT_CLASS);
+        properties.remove(PROPERTY_CLIENT_PROPERTIES);
+        
+        // the remaining properties are runtime properties
+        benchmarkProperties.putAll(properties);        
     }
 }

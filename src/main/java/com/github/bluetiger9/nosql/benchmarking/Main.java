@@ -69,7 +69,7 @@ public final class Main {
             System.exit(-1);
         }
         
-        LOGGER.info("Runner class loaded succesfully. Creating the runner.");
+        LOGGER.info("Runner class loaded successfully. Creating the runner.");
         return ComponentFactory.constructFromProperties(Runner.class, runnerClazz, mainProperties);
     }
 }
