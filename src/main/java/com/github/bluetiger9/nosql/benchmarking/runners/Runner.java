@@ -43,7 +43,8 @@ public class Runner extends Component {
     @SuppressWarnings("unchecked")
     public void runBenchmark() {
         try {
-            benchmark.run(clientFactory);
+            benchmark.initBenchmark(clientFactory);
+            benchmark.run();
         } catch (ClassCastException e) {
             logger.error("Wrong client type");
             throw new RuntimeException(e);

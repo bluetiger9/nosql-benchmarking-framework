@@ -13,10 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.github.bluetiger9.nosql.benchmarking.benchmarks.keyvalue;
+package com.github.bluetiger9.nosql.benchmarking.benchmarks.document;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang.RandomStringUtils;
@@ -25,25 +29,31 @@ import org.apache.commons.math3.util.Pair;
 import com.github.bluetiger9.nosql.benchmarking.Util;
 import com.github.bluetiger9.nosql.benchmarking.benchmarks.GenericPerformanceBenchmark;
 import com.github.bluetiger9.nosql.benchmarking.clients.ClientException;
-import com.github.bluetiger9.nosql.benchmarking.clients.keyvalue.KeyValueStoreClient;
+import com.github.bluetiger9.nosql.benchmarking.clients.document.DocumentStoreClient;
 import com.github.bluetiger9.nosql.benchmarking.util.KeyGenerator;
 
-public class GenericKeyValueStoreBenchmark extends GenericPerformanceBenchmark<KeyValueStoreClient> {
+public class GenericDocumentStoreBenchmark extends GenericPerformanceBenchmark<DocumentStoreClient> {
     private static final String OPERATION_READ = "read";
     private static final String OPERATION_INSERT = "insert";
     private static final String OPERATION_UPDATE = "update";
     private static final String OPERATION_DELETE = "delete";
 
     private final static int KEY_SIZE = 20;
-    private final static int VALUE_SIZE = 1000;
+    private final static int VALUE_SIZE = 100;
+    private final static int ATTRIBUTE_NAME_SIZE = 10;
 
     private final int initialRecords;
-
+    private final int nrAttributes;
+    private final int nrAttributesUpdate;
     private final List<Pair<String, Double>> availableOperations;
+    private final List<String> attributes;
 
-    public GenericKeyValueStoreBenchmark(Properties props) {
+    public GenericDocumentStoreBenchmark(Properties props) {
         super(props);
         this.initialRecords = Integer.parseInt(Util.getMandatoryProperty(props, "initialRecords"));
+        this.nrAttributes = Integer.parseInt(Util.getMandatoryProperty(properties, "nrAttributes"));
+        this.nrAttributesUpdate = Integer.parseInt(Util.getMandatoryProperty(properties, "nrAttributesUpdate"));
+        
         final Double pRead = Double.parseDouble(props.getProperty("pRead", "0.0"));
         final Double pInsert = Double.parseDouble(props.getProperty("pInsert", "0.0"));
         final Double pUpdate = Double.parseDouble(props.getProperty("pUpdate", "0.0"));
@@ -54,6 +64,11 @@ public class GenericKeyValueStoreBenchmark extends GenericPerformanceBenchmark<K
         
         this.availableOperations = Arrays.asList(new Pair<>(OPERATION_READ, pRead), new Pair<>(OPERATION_INSERT,
                 pInsert), new Pair<>(OPERATION_UPDATE, pUpdate), new Pair<>(OPERATION_DELETE, pDelete));
+        
+        this.attributes = new ArrayList<String>();
+        for (int i = 0; i < nrAttributes; ++i) {
+            attributes.add(RandomStringUtils.randomAlphanumeric(ATTRIBUTE_NAME_SIZE));
+        }
     }
 
     @Override
@@ -63,18 +78,20 @@ public class GenericKeyValueStoreBenchmark extends GenericPerformanceBenchmark<K
 
     @Override
     protected BenchmarkTask createBenchmarkTask() {
-        final KeyValueBenchmarkTask task = new KeyValueBenchmarkTask();
+        final DocumentStoreBenchmarkTask task = new DocumentStoreBenchmarkTask();
         super.addBenchmarkTask(task);
         return task;
     }
 
-    private class KeyValueBenchmarkTask extends GenericPerformanceBenchmark<KeyValueStoreClient>.BenchmarkTask {
+    private class DocumentStoreBenchmarkTask extends GenericPerformanceBenchmark<DocumentStoreClient>.BenchmarkTask {
         private final KeyGenerator keyGenerator;
         private final String keySufix;
+        private final List<String> attributeList;
 
-        public KeyValueBenchmarkTask() {
+        public DocumentStoreBenchmarkTask() {
             this.keyGenerator = new KeyGenerator();
             this.keySufix = Integer.toString(taskNr);
+            this.attributeList = new ArrayList<>(attributes);
         }
 
         @Override
@@ -86,13 +103,21 @@ public class GenericKeyValueStoreBenchmark extends GenericPerformanceBenchmark<K
 
             case OPERATION_INSERT:
                 final String key = KeyGenerator.newRandomKey(KEY_SIZE) + keySufix;
-                final String value = RandomStringUtils.randomAscii(VALUE_SIZE);
-                client.insert(key, value);
+                final Map<String, String> values = new HashMap<>();
+                for (String attribute : attributes) {
+                    values.put(attribute, RandomStringUtils.randomAscii(VALUE_SIZE));
+                }
+                client.insert(key, values);
                 keyGenerator.add(key);
                 break;
 
             case OPERATION_UPDATE:
-                client.update(keyGenerator.getRandomKey(), RandomStringUtils.randomAscii(VALUE_SIZE));
+                Collections.shuffle(attributeList);
+                final Map<String, String> updateValues = new HashMap<>();
+                for (int i = 0; i < nrAttributesUpdate; ++i) {
+                    updateValues.put(attributes.get(i), RandomStringUtils.randomAscii(VALUE_SIZE));
+                }
+                client.update(keyGenerator.getRandomKey(), updateValues);
                 break;
 
             case OPERATION_DELETE:
@@ -101,14 +126,11 @@ public class GenericKeyValueStoreBenchmark extends GenericPerformanceBenchmark<K
             }
         }
 
-        public void init(KeyValueStoreClient client) {
+        public void init(DocumentStoreClient client) {
             super.init(client);
             try {
                 for (int i = 0; i < initialRecords / nrThreads; ++i) {
-                    final String key = KeyGenerator.newRandomKey(KEY_SIZE) + keySufix;
-                    final String value = RandomStringUtils.randomAscii(VALUE_SIZE);
-                    client.insert(key, value);
-                    keyGenerator.add(key);
+                    doOperation(OPERATION_INSERT);
                 }
             } catch (ClientException e) {
                 logger.error("Error occurred when inserting test data in the database.", e);

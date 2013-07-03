@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2013 Attila Tőkés. All rights reserved.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.github.bluetiger9.nosql.benchmarking.benchmarks;
 
 import java.io.File;
@@ -17,7 +32,6 @@ import org.apache.log4j.Logger;
 import com.github.bluetiger9.nosql.benchmarking.Util;
 import com.github.bluetiger9.nosql.benchmarking.clients.ClientException;
 import com.github.bluetiger9.nosql.benchmarking.clients.DatabaseClient;
-import com.github.bluetiger9.nosql.benchmarking.clients.keyvalue.KeyValueStoreClient;
 import com.github.bluetiger9.nosql.benchmarking.util.ExportTools;
 import com.github.bluetiger9.nosql.benchmarking.util.StopWatch;
 import com.github.bluetiger9.nosql.benchmarking.util.TimeMeasurment;
@@ -43,7 +57,7 @@ public abstract class GenericPerformanceBenchmark<ClientType extends DatabaseCli
     }
     
     @Override
-    protected void exportResults(File outputFolder) throws IOException {
+    public void exportResults(File outputFolder) throws IOException {
         final PrintWriter writer = new PrintWriter(new File(outputFolder, "summary.txt"));
         writer.println("Operations: " + numOps);
         writer.println("Target throughput: " + throughput + " op/sec");
@@ -103,7 +117,7 @@ public abstract class GenericPerformanceBenchmark<ClientType extends DatabaseCli
         private final double timeBeetweenOps;
         private final EnumeratedDistribution<String> opGenerator;
         private final StopWatch stopWatch;
-        protected KeyValueStoreClient client;
+        protected ClientType client;
         private final Map<String, List<TimeMeasurment>> latencies;
         private volatile double actualThroughput;
 
@@ -124,7 +138,7 @@ public abstract class GenericPerformanceBenchmark<ClientType extends DatabaseCli
 
         public abstract void doOperation(String op) throws ClientException;
 
-        public void init(KeyValueStoreClient client) {
+        public void init(ClientType client) {
             this.client = client;
             
             try {

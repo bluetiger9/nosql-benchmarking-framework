@@ -9,4 +9,7 @@ public interface CommonClientProperties {
 	
 	// Key-Value Store
 	public static final String PROPERTY_BUCKET = "bucket";
+	
+	// Column-Family Store
+	public static final String PROPERTY_COLUMN_FAMILY = "columnFamily";
 }
